@@ -2,23 +2,36 @@ package task
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
 	"google.golang.org/api/tasks/v1"
 )
 
+var (
+	errTaskNotFound     = errors.New("task not found")
+	errTaskListNotFound = errors.New("no tasklists found")
+)
+
+// Task contains meta on whether a given task has been
+// completed or not yet.
 type Task struct {
-	Name   string
-	Due    time.Duration
+	// Name of the task as shown on Google Calender.
+	Name string
+	// Due time of the task relative to midnight. Since Google's API
+	// does not return the time of the task, this needs to be passed
+	// in manually.
+	Due time.Duration
+	// Client instance to Google Task service.
 	Client *tasks.Service
-	task   *tasks.Task
+	// Pointer to the task that matches the Name.
+	task *tasks.Task
 }
 
+// Done checks whether the given task has been completed.
 func (t *Task) Done() (bool, error) {
 	if t.task == nil {
-		return false, errors.New("task not found")
+		return false, errTaskNotFound
 	}
 
 	if strings.Contains(t.task.Status, "completed") {
@@ -28,9 +41,11 @@ func (t *Task) Done() (bool, error) {
 	return false, nil
 }
 
+// Late checks if the current time is past that of the due date
+// of the task.
 func (t *Task) Late() (bool, error) {
 	if t.task == nil {
-		return false, errors.New("task not found")
+		return false, errTaskNotFound
 	}
 
 	dd, _ := time.Parse(time.RFC3339, t.task.Due)
@@ -43,10 +58,12 @@ func (t *Task) Late() (bool, error) {
 	return false, nil
 }
 
+// Find searches for the task (by the title name) from the
+// list of returned tasks.
 func (t *Task) Find() error {
 	tl, err := t.Client.Tasklists.List().Do()
 	if err != nil {
-		return errors.New("no tasklists found")
+		return errTaskListNotFound
 	}
 	id := tl.Items[0].Id
 	tasks, err := t.Client.Tasks.List(id).ShowCompleted(true).ShowHidden(true).ShowDeleted(true).Do()
@@ -55,12 +72,11 @@ func (t *Task) Find() error {
 	}
 
 	for _, task := range tasks.Items {
-		fmt.Println(task.Title)
 		if strings.Contains(task.Title, t.Name) {
 			t.task = task
 			return nil
 		}
 	}
 
-	return errors.New("task not found")
+	return errTaskNotFound
 }
