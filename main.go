@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/gen2brain/beeep"
 	"github.com/kingcobra2468/wasp/internal/task"
 )
 
@@ -64,5 +66,9 @@ func main() {
 	done, _ := task.Done()
 	if !done && late {
 		fmt.Println("here")
+		err := beeep.Alert("Wasp", fmt.Sprintf("%s is past due.", strings.Title(taskName)), "asset/wasp.png")
+		if err != nil {
+			panic(err)
+		}
 	}
 }
