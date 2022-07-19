@@ -54,7 +54,7 @@ func main() {
 
 	client, err := task.NewClient(tokenFile, credsFile)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalln(err)
 	}
 
 	task := task.Task{Name: taskName, Due: taskDueTime, Client: client}
@@ -65,7 +65,6 @@ func main() {
 	late, _ := task.Late()
 	done, _ := task.Done()
 	if !done && late {
-		fmt.Println("here")
 		err := beeep.Alert("Wasp", fmt.Sprintf("%s is past due.", strings.Title(taskName)), "asset/wasp.png")
 		if err != nil {
 			panic(err)
