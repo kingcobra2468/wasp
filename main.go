@@ -21,7 +21,7 @@ var (
 
 func init() {
 	flag.StringVar(&tokenFile, "token-file", "token.json", "path to the token file")
-	flag.StringVar(&credsFile, "creds", "", "path to the credentials file")
+	flag.StringVar(&credsFile, "creds-file", "", "path to the credentials file")
 	flag.StringVar(&taskName, "name", "", "name of the task")
 	flag.DurationVar(&taskDueTime, "time", time.Duration(21*time.Hour), "name of the task")
 }
